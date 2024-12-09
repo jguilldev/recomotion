@@ -16,49 +16,42 @@ people = ['Amy Winehouse', 'David Bowie', 'Freddie Mercury', 'Kurt Cobain', 'Ozz
 # Ruta del archivo Haar Cascade
 haar_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-# Ruta al video que deseas procesar
-video_path = './videos/amy.mp4'  #  Se debe cambia a la ruta en donde esta el video
+# Ruta de la imagen que deseas procesar
+image_path = './images/amy.png'  # Cambia a la ruta donde está tu imagen
 
-# Carga el video
-cap = cv2.VideoCapture(video_path)
-
-if not cap.isOpened():
-    print("Error al abrir el video") #manejo de errores
+# Carga la imagen
+image = cv2.imread(image_path)
+if image is None:
+    print("Error al cargar la imagen")  # Manejo de errores
     exit()
 
-while True:
-    ret, frame = cap.read()
+# Redimensiona la imagen a un tamaño más manejable
+output_width = 640
+output_height = 480
+image = cv2.resize(image, (output_width, output_height))
 
-    if not ret:
-        print("Fin del video o error al leer el marco")
-        break
+# Convierte la imagen a escala de grises
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    # Convierte cada frame a escala de grises
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+# Detecta los rostros en la imagen
+faces_rect = haar_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4)
 
-    # Detecta los rostros en el frame
-    faces_rect = haar_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=4)
+for (x, y, w, h) in faces_rect:
+    faces_roi = gray[y:y+h, x:x+w]  # Selecciona la región de interés (el rostro)
 
-    for (x, y, w, h) in faces_rect:
-        faces_roi = gray[y:y+h, x:x+w]  # Selecciona la región de interés (el rostro)
+    # Realiza la predicción
+    label, confidence = face_recognizer.predict(faces_roi)
 
-        # Realiza la predicción
-        label, confidence = face_recognizer.predict(faces_roi)
+    # Dibuja el rectángulo alrededor del rostro
+    cv2.rectangle(image, (x, y), (x+w, y+h), (255, 0, 0), 2)
 
-        # Dibuja el rectángulo alrededor del rostro
-        cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+    # Muestra el nombre del artista y el nivel de confianza
+    cv2.putText(image, f'{people[label]} ({int(confidence)})', (x, y-10), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
 
-        # Muestra el nombre del artista y el nivel de confianza
-        cv2.putText(frame, f'{people[label]} ({int(confidence)})', (x, y-10), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+# Muestra la imagen procesada
+cv2.imshow('Imagen - Reconocimiento Facial', image)
 
-    # Muestra el frame con las detecciones
-    cv2.imshow('Video - Reconocimiento Facial', frame)
-
-    # Presiona 'q' para salir del video
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-# Libera los recursos
-cap.release()
+# Presiona cualquier tecla para cerrar la ventana
+cv2.waitKey(0)
 cv2.destroyAllWindows()
