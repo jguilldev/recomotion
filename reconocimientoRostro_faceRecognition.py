@@ -17,7 +17,7 @@ people = ['Amy Winehouse', 'David Bowie', 'Freddie Mercury', 'Kurt Cobain', 'Ozz
 haar_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 # Ruta de la imagen que deseas procesar
-image_path = './images/amy.png'  # Cambia a la ruta donde está tu imagen
+image_path = 'images/simple_images/Amy Winehouse/Amy Winehouse_3.jpg'  # Cambia a la ruta donde está tu imagen
 
 # Carga la imagen
 image = cv2.imread(image_path)
